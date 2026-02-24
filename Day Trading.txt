@@ -1,0 +1,22 @@
+#telegram通知
+$env:TG_BOT_TOKEN="8164275623:AAHHbWbHZlCn_pgdQBLNI8F1JBq01DSCZvU"
+$env:TG_CHAT_ID="8067001517"
+myfubon_trader_bot
+
+測試 Telegram Bot 是否可用（getMe）
+python -c "import os,requests; t=os.getenv('TG_BOT_TOKEN'); c=os.getenv('TG_CHAT_ID'); r=requests.post(f'https://api.telegram.org/bot{t}/sendMessage', json={'chat_id':c,'text':'✅ Telegram 通知測試成功'}, timeout=5); print(r.status_code); print(r.text)"
+
+
+
+$env:FUBON_PERSONAL_ID="Q123012020"
+$env:FUBON_LOGIN_PWD="Qwert1126" 
+$env:FUBON_CERT_PATH="C:\CAFubon\Q123012020\Q123012020.pfx" 
+$env:FUBON_CERT_PWD="Qwert1126"
+$env:ACCOUNT_ID = "Q123012020"
+$env:TG_CHAT_ID="8067001517" 
+$env:TG_BOT_TOKEN="8164275623:AAHHbWbHZlCn_pgdQBLNI8F1JBq01DSCZvU"
+
+
+python scan_daytrade_candidates.py
+python my_fubon_trader.py
+
