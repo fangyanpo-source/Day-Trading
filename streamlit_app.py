@@ -634,7 +634,7 @@ elif selected_tab == "📈 K線圖與回測":
                 fig.add_trace(go.Scatter(x=sx, y=sy, mode='markers', marker=dict(symbol='triangle-down', size=16, color='#ff3366', line=dict(width=1, color='black')), name='回測賣出 🔻'), row=1, col=1)
 
         trade_times, trade_prices, trade_texts = [], [], []
-        if redis_db.client:
+        if redis_db.is_connected:
             for key in redis_db.client.keys("system:data:fill_*"):
                 fill = redis_db.get_json(key)
                 if fill and fill.get("symbol") == selected_chart_sym:
@@ -704,7 +704,7 @@ elif selected_tab == "💰 成交回報與行情":
     col4a, col4b = st.columns([1.5, 1])
     with col4a:
         st.subheader("💰 今日成交回報 (Fills)")
-        fill_keys = redis_db.client.keys("system:data:fill_*") if redis_db.client else []
+        fill_keys = redis_db.client.keys("system:data:fill_*") if redis_db.is_connected else []
         if fill_keys:
             fill_data = []
             for key in fill_keys:
@@ -719,7 +719,7 @@ elif selected_tab == "💰 成交回報與行情":
             
     with col4b:
         st.subheader("📡 行情心跳 (Ticks)")
-        market_keys = redis_db.client.keys("market:trades:*") if redis_db.client else []
+        market_keys = redis_db.client.keys("market:trades:*") if redis_db.is_connected else []
         market_data = [{"標的": key.split(":")[-1], "現價": redis_db.get_json(key).get("price", None), "單量": redis_db.get_json(key).get("size", None)} for key in market_keys if redis_db.get_json(key)]
         if market_data: st.dataframe(pd.DataFrame(market_data), use_container_width=True, hide_index=True)
         else: st.caption("等待行情接入...")

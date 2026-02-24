@@ -505,6 +505,8 @@ class RealtimeStrategyEngine:
         self.positions.clear()
         self.has_force_closed = True
         redis_db.set_flag("system:mock:pnl", str(self.daily_realized_pnl))
+        # ✅ 寫入全局熔斷旗標至 Redis，讓 system_monitor 與 Streamlit 面板同步感知
+        redis_db.set_flag("system:flag:kill_switch", "1", expire_sec=86400)
         for sym in self.watch_pool:
             self.traded_today.add(sym)
 
@@ -581,6 +583,8 @@ class RealtimeStrategyEngine:
         self.daily_realized_pnl = 0.0
         indicator_cache.clear()
         redis_db.set_flag("system:mock:pnl", "0")
+        # ✅ 跨日重置：清除前一交易日的熔斷旗標，讓新的一天可以正常進場
+        redis_db.delete_flag("system:flag:kill_switch")
         self.logger.info(
             "🌅 偵測到新交易日，已自動重置每日狀態"
             "（強制平倉旗標 / 今日交易集合 / 損益計數器 / 指標快取）。"
@@ -654,6 +658,15 @@ class RealtimeStrategyEngine:
                 # 非交易時段（盤後、夜間、隔日開盤前）直接等待，不佔用 CPU。
                 # 跨日後 _reset_daily_state 會將 has_force_closed 重置為 False。
                 if self.has_force_closed:
+                    time.sleep(5)
+                    continue
+
+                # ✅ 新增：從 Redis 讀取 kill_switch，確保 system_monitor 觸發的
+                # 熔斷（例如：連續虧損超限）也能讓策略大腦立刻停止新進場。
+                if redis_db.get_flag("system:flag:kill_switch") == "1":
+                    if not self.has_force_closed:
+                        self.logger.error("🚨 偵測到外部熔斷旗標 (kill_switch)，暫停所有新進場！")
+                        self.has_force_closed = True
                     time.sleep(5)
                     continue
 
