@@ -57,24 +57,33 @@ class PositionSizer:
         
         # 計算每股風險
         risk_per_share = abs(entry_price - stop_loss)
-        
+
         if risk_per_share == 0:
             logger.warning("停損距離為0，無法計算倉位")
             return None
-        
+
         # 計算股數
         shares = int(self.risk_amount / risk_per_share)
-        
+
         # 考慮台股交易單位（1張 = 1000股）
         shares = (shares // 1000) * 1000  # 調整為1000的倍數
-        
+
+        # ✅ 修正點：向下取整後可能為 0（當停損距離很小時），
+        # 不足 1 張（1000股）視為風險過大或資金不足，拒絕下單。
+        if shares < 1000:
+            logger.warning(f"計算股數不足1張 (風險距離過小或資金不足)，取消此倉位")
+            return None
+
         # 檢查是否超過最大倉位
         position_value = shares * entry_price
-        
+
         if position_value > self.max_position_value:
             # 調整為最大倉位
             shares = int(self.max_position_value / entry_price)
             shares = (shares // 1000) * 1000
+            if shares < 1000:
+                logger.warning("最大倉位限制下仍不足1張，取消此倉位")
+                return None
             position_value = shares * entry_price
             logger.info(f"倉位受限於最大值，調整為 {shares} 股")
         

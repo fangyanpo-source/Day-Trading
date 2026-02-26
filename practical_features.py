@@ -38,6 +38,7 @@ class TrailingStopManager:
         self.trailing_stops[symbol] = {
             'stop_price': entry_price * (1 - pct),
             'highest_price': entry_price,
+            'entry_price': entry_price,  # ✅ 修正點：保留進場價，供 pnl_pct 正確計算損益
             'trailing_pct': pct,
             'triggered': False
         }
@@ -95,9 +96,11 @@ class TrailingStopManager:
             stop_info['triggered'] = True
             logger.warning(f"觸發移動停損: {symbol} @ {current_price:.2f} (停損: {stop_info['stop_price']:.2f})")
         
-        # 計算損益百分比
-        pnl_pct = ((current_price - stop_info['stop_price']) / stop_info['stop_price']) * 100
-        
+        # ✅ 修正點：pnl_pct 應以「進場價」為基準計算損益百分比，
+        # 原本以 stop_price 為基準，計算的是距停損線距離而非真實損益。
+        entry_price = stop_info.get('entry_price', stop_info['highest_price'])
+        pnl_pct = ((current_price - entry_price) / entry_price) * 100
+
         return {
             'updated': updated,
             'triggered': triggered,

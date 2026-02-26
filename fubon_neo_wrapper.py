@@ -362,7 +362,7 @@ class FubonNeoWrapper:
                         'market_value': float(i.make_money) # 假設欄位
                     })
             return positions
-        except:
+        except Exception:
             return []
 
     # -----------------------------------------------------------------
@@ -403,6 +403,6 @@ class FubonNeoWrapper:
         if self.sdk:
             try:
                 self.sdk.logout()
-            except:
+            except Exception:
                 pass
         self.logged_in = False

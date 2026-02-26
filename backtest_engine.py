@@ -64,8 +64,10 @@ class TechnicalIndicators:
     def calc_kd(df, period=9):
         df['Min_Low'] = df['Low'].rolling(window=period).min()
         df['Max_High'] = df['High'].rolling(window=period).max()
-        df['RSV'] = (df['Close'] - df['Min_Low']) / (df['Max_High'] - df['Min_Low']) * 100
-        df['RSV'] = df['RSV'].fillna(50)
+        # ✅ 修正點：當 Max_High == Min_Low 時分母為 0，pandas 產生 inf 而非 NaN，
+        # 需先將分母 0 替換為 NaN，再用 fillna(50) 同時處理 NaN 與 inf。
+        denom = (df['Max_High'] - df['Min_Low']).replace(0, np.nan)
+        df['RSV'] = ((df['Close'] - df['Min_Low']) / denom * 100).fillna(50).clip(0, 100)
 
         k, d = [], []
         for i, rsv in enumerate(df['RSV']):
@@ -83,8 +85,10 @@ class TechnicalIndicators:
         delta = df['Close'].diff()
         gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
         loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
-        rs = gain / loss
-        df['RSI'] = 100 - (100 / (1 + rs))
+        # ✅ 修正點：loss 為 0 時 gain/0 = inf（動能純多方，RSI 應為 100），
+        # gain 與 loss 均為 0 時結果為 NaN，fillna(50) 回退至中性值。
+        rs = gain / loss.replace(0, np.nan)
+        df['RSI'] = (100 - (100 / (1 + rs))).fillna(50)
         return df
 
     @staticmethod
@@ -438,7 +442,7 @@ class BacktestEngine:
                 sharpe_ratio = (daily_returns.mean() / daily_returns.std()) * np.sqrt(252)
             else:
                 sharpe_ratio = 0
-        except:
+        except Exception:
             sharpe_ratio = 0
 
         self.drawdowns = drawdowns
