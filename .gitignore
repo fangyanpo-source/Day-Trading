@@ -1,0 +1,45 @@
+# 敏感設定檔 (絕對不可上傳 git)
+.env
+*.env
+.env.*
+
+# 憑證與金鑰
+*.pfx
+*.p12
+*.key
+*.pem
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# 虛擬環境
+venv/
+env/
+.venv/
+.env/
+
+# 資料庫
+*.db
+*.sqlite3
+
+# 日誌
+logs/
+*.log
+
+# 系統暫存
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo

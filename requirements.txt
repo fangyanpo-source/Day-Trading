@@ -1,0 +1,13 @@
+streamlit>=1.35.0
+pandas>=2.0.0
+numpy>=1.26.0
+plotly>=5.20.0
+yfinance>=0.2.40
+requests>=2.31.0
+redis>=5.0.0
+python-dotenv>=1.0.0
+pytz>=2024.1
+cryptography>=42.0.0
+urllib3>=2.0.0
+matplotlib>=3.8.0
+fubon-neo>=0.1.0
