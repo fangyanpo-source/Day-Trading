@@ -2,6 +2,7 @@
 .env
 *.env
 .env.*
+Day Trading.txt
 
 # 憑證與金鑰
 *.pfx
